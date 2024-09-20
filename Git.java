@@ -5,17 +5,17 @@ public class Git {
         
     }
 
-    public static void initializeRepo(){
-       File gitDirFile = new File("./git/");
+    public static void initializeRepo(String repoName){
+       File gitDirFile = new File("./" + repoName + "/git/");
         if(!gitDirFile.exists()){
-            gitDirFile.mkdir();
+            gitDirFile.mkdirs();
 
-            File objectDirFile = new File("./git/objects/");
+            File objectDirFile = new File("./"+ repoName +"/git/objects/");
             if(!objectDirFile.exists()){
                 objectDirFile.mkdir();
             }
 
-            File indexFile = new File("./git/index");
+            File indexFile = new File("./" + repoName + "/git/index");
             if(!indexFile.exists()){
                 try {
                     indexFile.createNewFile();
@@ -28,25 +28,30 @@ public class Git {
         }
     }
 
-    public static void checkAndDeleteRepo(){
-        File gitDirFile = new File("./git/");
-        File objectDirFile = new File("./git/objects/");
-        File indexFile = new File("./git/index");
+    public static void checkAndDeleteRepo(String repoName){
+        File gitDirFile = new File("./" + repoName + "/git/");
+        File objectDirFile = new File("./"+ repoName +"/git/objects/");
+        File indexFile = new File("./" + repoName + "/git/index");
+        File repoDir = new File("./" + repoName + "/");
         if(gitDirFile.exists()){
-            System.out.println("the git directory exists. path is ./git/");
+            System.out.println("the git directory exists. path is ./" + repoName + "/git/");
         }
         if(objectDirFile.exists()){
-            System.out.println("the objects directory exists. path is ./git/objects/");
+            System.out.println("the objects directory exists. path is ./"+ repoName + "/git/objects/");
         }
         if(indexFile.exists()){
-            System.out.println("the index file exists. path is ./git/index");
+            System.out.println("the index file exists. path is ./" + repoName + "/git/index");
+        }
+        if(repoDir.exists()){
+            System.out.println("the repo direc exists. path is ./" + repoName + "/");
         }
         indexFile.delete();
         objectDirFile.delete();
         gitDirFile.delete();
+        repoDir.delete();
     }
 
     public static void createBlob(){
-        
+
     }
 }
