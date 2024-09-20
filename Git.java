@@ -45,4 +45,8 @@ public class Git {
         objectDirFile.delete();
         gitDirFile.delete();
     }
+
+    public static void createBlob(){
+        
+    }
 }
