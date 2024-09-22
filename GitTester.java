@@ -9,9 +9,9 @@ import java.util.Random;
 //remember that when testing the repository is always a level below where you run the tester
 //you might have to specify stuff like this repo.createBlob( "./"+ repoName + "/" +testFile.getName());
 public class GitTester {
-    public static String repoName = "sean";
-    public static int howMany = 3;
-    public static boolean deleteAtEndOfTest = true;
+    public static String repoName = "seanozalpasan";
+    public static int howMany = 5;
+    public static boolean deleteAtEndOfTest = false;
     
     public static void main(String[] args) {
         Git repo = new Git(repoName);
@@ -23,7 +23,13 @@ public class GitTester {
 
         for(int i = 0; i<howMany ; i++){
             File testFile = new File( "./"+repoName+"/testFile" + i + ".txt");
-            repo.createBlob("./"+ repoName + "/" +testFile.getName());
+            String testFileName = testFile.getName();
+
+            if(repo.compression){
+                testFile = repo.compressed(testFile);
+            }
+
+            repo.createBlob("./"+ repoName + "/" +testFileName);
             //checks to see if all files are in objects folder
             String hash = repo.createHash(testFile);
             Path pathToHashedFile = Paths.get("./"+ repoName + "/git/objects/" + hash);
@@ -64,18 +70,22 @@ public class GitTester {
         try {
             for (int i = 0; i < howMany; i++) {
                 File testFile = new File("./" + repoName + "/testFile" + i + ".txt");
-                testFile.createNewFile();
+                if(!testFile.exists()){
+                    testFile.createNewFile();
 
-                Path pathoftestfile = Paths.get(testFile.getPath());
-                BufferedWriter writer = Files.newBufferedWriter(pathoftestfile, StandardOpenOption.APPEND);
-                
-                Random rand = new Random();
-                int randomNumber = rand.nextInt(30) + 1;
-                
-                for (int j = 0; j < randomNumber; j++) {
-                    writer.append(j + " ");
+                    Path pathoftestfile = Paths.get(testFile.getPath());
+                    BufferedWriter writer = Files.newBufferedWriter(pathoftestfile);
+
+                    Random rand = new Random();
+                    int randomNumber = rand.nextInt(100) + 1;
+
+                    for (int j = 0; j < randomNumber; j++) {
+                        writer.append(j + "");
+                    }
+                    writer.close();
+                } else {
+                    System.out.println("this file alr exists reset by deleteEverything()");
                 }
-                writer.close();
             }
 
         } catch (IOException e) {

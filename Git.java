@@ -5,12 +5,11 @@ import java.math.BigInteger;
 import java.nio.file.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.util.zip.Deflater; 
 import java.util.zip.DeflaterOutputStream;
-import java.io.FileInputStream; 
-import java.io.FileNotFoundException; 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class Git {
     public boolean compression = true;
@@ -72,77 +71,92 @@ public class Git {
 
     public void createBlob(String ogFilePath) {
         File ogFile = new File(ogFilePath);
+        String ogFileName = ogFile.getName();
 
         if(!ogFile.exists()){
             throw new NullPointerException();
         }
 
         if(!ogFile.isFile() || ogFile.isDirectory()){
-            throw new NullPointerException();
+            throw new IllegalArgumentException();
         }
 
-        // if(compression){
-        //     ogFile = compressed(ogFile);
-        // }
+        if(compression){
+            ogFile = compressed(ogFile);
+        }
+
         //creates the file and hash
         String hash = createHash(ogFile);
-        
         File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
-        // read from og file and copy contents into new file j created above
         
-        Path sourceFile = Paths.get(ogFile.getPath());
-        Path targetFile = Paths.get(hashedFile.getPath());
-        
-        writeFromOGtoHashedFile(sourceFile, targetFile);
+        // read from og file and copy contents into new file in objects
+        if(!hashedFile.exists()){
+            //System.out.println(ogFile.getPath());
+            Path sourceFile = Paths.get(ogFile.getPath());
+            //System.out.println(hashedFile.getPath());
+            Path targetFile = Paths.get(hashedFile.getPath());
+            writeFromOGtoHashedFile(sourceFile, targetFile);
+        }
 
-        // code below writes to the index file
+        // code below checks index and if file there doesnt write if there writes
+        boolean existsInIndex = false;
         Path pathToIndex = Paths.get("./" + repoName + "/git/index");
         try{
-            BufferedWriter writer = Files.newBufferedWriter(pathToIndex, StandardOpenOption.APPEND);
-            writer.append(hash + " ");
-            writer.append(ogFile.getName() + "\n");
-            writer.close();
+            BufferedReader reader = Files.newBufferedReader(pathToIndex);
+            String line;
+            while((line = reader.readLine()) != null){
+                if(line.equals(hash + " " + ogFileName)){
+                    existsInIndex = true;
+                    System.out.println("this file has already been indexed");
+                }
+            }
+            reader.close();
+
+            if(!existsInIndex){
+                BufferedWriter writer = Files.newBufferedWriter(pathToIndex, StandardOpenOption.APPEND);
+                writer.append(hash + " " + ogFileName + "\n");
+                writer.close();
+                System.out.println(ogFile.getName());
+            }
         } catch (IOException e){
             System.out.println("couldnt print into index");
         }
     }
 
-    // public File compressed (File file){
-    //     String compressedFileName = "./" + repoName + "/compressed" + file.getName();
-        
-    //     try{
-    //         File compressedFile = new File(compressedFileName);
-            
-    //         FileInputStream fis = new FileInputStream(file);
-    //         FileOutputStream fos = new FileOutputStream(compressedFile);
-    //         DeflaterOutputStream dos = new DeflaterOutputStream(fos);
-    //         int data = fis.read();
-    //         while(data != -1){
-    //             dos.write(data);
-    //             data = fis.read();
-    //         }
-    //         fis.close();
-    //         dos.close();
-    //         return compressedFile;
-    //     } catch (IOException e){
-    //         System.out.println("couldnt print");
-    //     }
-    //     return file;
-    // }
+    public File compressed (File file){
+        try{
+            File compressedFile = File.createTempFile("compress", null);
+            FileInputStream fis = new FileInputStream(file);
+            FileOutputStream fos = new FileOutputStream(compressedFile);
+            DeflaterOutputStream dos = new DeflaterOutputStream(fos);
+            int data = fis.read();
+            while(data != -1){
+                dos.write(data);
+                data = fis.read();
+            }
+            dos.finish();
+            fis.close();
+            fos.close();
+            dos.close();
+            return compressedFile;
+        } catch (IOException e){
+            System.out.println("couldnt print");
+        }
+        return file;
+    }
     
 
     //reads the source file, and prints it to the target
     private void writeFromOGtoHashedFile(Path source, Path target){
         try{
-            BufferedReader reader = Files.newBufferedReader(source);
-            BufferedWriter writer = Files.newBufferedWriter(target);
-            String lineInSource;
-            while ((lineInSource = reader.readLine()) != null) {
-                writer.append(lineInSource);
-                writer.newLine();
+            InputStream reader = Files.newInputStream(source);
+            OutputStream writer = Files.newOutputStream(target);
+            int data;
+            while ((data = reader.read()) != -1) {
+                writer.write(data);
             }
-            writer.close();
             reader.close();
+            writer.close();
         } catch (IOException e) {
             System.err.println("couldnt print");
         }
