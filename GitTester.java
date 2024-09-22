@@ -10,8 +10,8 @@ import java.util.Random;
 //you might have to specify stuff like this repo.createBlob( "./"+ repoName + "/" +testFile.getName());
 public class GitTester {
     public static String repoName = "sean";
-    public static int howMany = 5;
-    public static boolean deleteAtEndOfTest = false;
+    public static int howMany = 3;
+    public static boolean deleteAtEndOfTest = true;
     
     public static void main(String[] args) {
         Git repo = new Git(repoName);
@@ -23,7 +23,7 @@ public class GitTester {
 
         for(int i = 0; i<howMany ; i++){
             File testFile = new File( "./"+repoName+"/testFile" + i + ".txt");
-            repo.createBlob( "./"+ repoName + "/" +testFile.getName());
+            repo.createBlob("./"+ repoName + "/" +testFile.getName());
             //checks to see if all files are in objects folder
             String hash = repo.createHash(testFile);
             Path pathToHashedFile = Paths.get("./"+ repoName + "/git/objects/" + hash);
@@ -50,8 +50,8 @@ public class GitTester {
         }
 
         //out here the deletion of txt files as well as stuff in objects folder and index
-        File fileOfRepo = new File("./" + repoName + "/");
         if(deleteAtEndOfTest){
+            File fileOfRepo = new File("./" + repoName + "/");
             repo.deleteEverything(fileOfRepo);
             System.out.println("everything should be gone");
         }
@@ -59,7 +59,7 @@ public class GitTester {
 
     }
     //this method creates a certain amount of txt files, based on the howMany parameter
-    //the method will then write in the files, and you can use this for testing
+    //the method will then write in the files
     public static void createAndWriteFiles(int howMany) {
         try {
             for (int i = 0; i < howMany; i++) {

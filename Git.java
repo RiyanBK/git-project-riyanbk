@@ -5,9 +5,15 @@ import java.math.BigInteger;
 import java.nio.file.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.util.zip.Deflater; 
+import java.util.zip.DeflaterOutputStream;
+import java.io.FileInputStream; 
+import java.io.FileNotFoundException; 
+import java.io.FileOutputStream;
 
 public class Git {
-
+    public boolean compression = true;
     public String repoName;
 
     public Git(String repoName) {
@@ -74,19 +80,18 @@ public class Git {
         if(!ogFile.isFile() || ogFile.isDirectory()){
             throw new NullPointerException();
         }
+
+        // if(compression){
+        //     ogFile = compressed(ogFile);
+        // }
         //creates the file and hash
         String hash = createHash(ogFile);
         
         File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
-        try {
-            hashedFile.createNewFile();
-        } catch (IOException e) {
-            System.out.println("couldnt do it");
-        }
         // read from og file and copy contents into new file j created above
         
-        Path sourceFile = Paths.get(ogFilePath);
-        Path targetFile = Paths.get("./" + repoName + "/git/objects/" + hash);
+        Path sourceFile = Paths.get(ogFile.getPath());
+        Path targetFile = Paths.get(hashedFile.getPath());
         
         writeFromOGtoHashedFile(sourceFile, targetFile);
 
@@ -101,6 +106,30 @@ public class Git {
             System.out.println("couldnt print into index");
         }
     }
+
+    // public File compressed (File file){
+    //     String compressedFileName = "./" + repoName + "/compressed" + file.getName();
+        
+    //     try{
+    //         File compressedFile = new File(compressedFileName);
+            
+    //         FileInputStream fis = new FileInputStream(file);
+    //         FileOutputStream fos = new FileOutputStream(compressedFile);
+    //         DeflaterOutputStream dos = new DeflaterOutputStream(fos);
+    //         int data = fis.read();
+    //         while(data != -1){
+    //             dos.write(data);
+    //             data = fis.read();
+    //         }
+    //         fis.close();
+    //         dos.close();
+    //         return compressedFile;
+    //     } catch (IOException e){
+    //         System.out.println("couldnt print");
+    //     }
+    //     return file;
+    // }
+    
 
     //reads the source file, and prints it to the target
     private void writeFromOGtoHashedFile(Path source, Path target){
