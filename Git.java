@@ -22,19 +22,16 @@ public class Git {
         File gitDirFile = new File("./" + repoName + "/git/");
         if (!gitDirFile.exists()) {
             gitDirFile.mkdirs();
-            System.out.println(gitDirFile.getAbsolutePath());
 
             File objectDirFile = new File("./" + repoName + "/git/objects/");
             if (!objectDirFile.exists()) {
                 objectDirFile.mkdir();
-                System.out.println(objectDirFile.getAbsolutePath());
             }
 
             File indexFile = new File("./" + repoName + "/git/index");
             if (!indexFile.exists()) {
                 try {
                     indexFile.createNewFile();
-                    System.out.println(indexFile.getAbsolutePath());
                 } catch (IOException e) {
                     System.out.println("could not create file");
                 }
@@ -67,10 +64,6 @@ public class Git {
         repoDir.delete();
     }
 
-    // WHEN TESTING DO
-    // createBlob(repoName/ogFilePath)
-    // this is because Git.java and GitTester.java are one level above the repoName
-    // and we are running those
     public void createBlob(String ogFilePath) {
         File ogFile = new File(ogFilePath);
 
@@ -78,7 +71,7 @@ public class Git {
             throw new NullPointerException();
         }
 
-        if(ogFile.getParent() == null){
+        if(!ogFile.isFile() || ogFile.isDirectory()){
             throw new NullPointerException();
         }
         //creates the file and hash
