@@ -76,6 +76,7 @@ public class Git {
         }
         //creates the file and hash
         String hash = createHash(ogFile);
+        
         File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
         try {
             hashedFile.createNewFile();
@@ -122,7 +123,7 @@ public class Git {
      * as per https://www.geeksforgeeks.org/sha-1-hash-in-java/
      * takes the contents of the files and makes a sha1 hash
      */
-    private String createHash(File filePath) {
+    public String createHash(File filePath) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             byte[] messageDigest = md.digest(Files.readAllBytes(filePath.toPath()));
@@ -135,5 +136,16 @@ public class Git {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    public void deleteEverything(File file){
+        for(File childFile : file.listFiles()){
+            if(childFile.isDirectory()){
+                deleteEverything(childFile);
+            }
+            childFile.delete();
+        }
+        file.delete();
     }
 }

@@ -1,11 +1,17 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.nio.file.*;
 import java.util.Random;
 
+
+//remember that when testing the repository is always a level below where you run the tester
+//you might have to specify stuff like this repo.createBlob( "./"+ repoName + "/" +testFile.getName());
 public class GitTester {
     public static String repoName = "sean";
+    public static int howMany = 5;
+    public static boolean deleteAtEndOfTest = false;
     
     public static void main(String[] args) {
         Git repo = new Git(repoName);
@@ -13,19 +19,42 @@ public class GitTester {
     
         isRepoSetupCorrectly();
         
-        int howMany = 5;
-
         createAndWriteFiles(howMany);
 
         for(int i = 0; i<howMany ; i++){
-            File testFile = new File("testFile" + i + ".txt");
-            System.out.println(testFile.getAbsolutePath());
-            repo.createBlob(testFile.getName());
-            //add checks in here
+            File testFile = new File( "./"+repoName+"/testFile" + i + ".txt");
+            repo.createBlob( "./"+ repoName + "/" +testFile.getName());
+            //checks to see if all files are in objects folder
+            String hash = repo.createHash(testFile);
+            Path pathToHashedFile = Paths.get("./"+ repoName + "/git/objects/" + hash);
+            if(Files.exists(pathToHashedFile)){
+                System.out.println(i+" hash created successfully and its in objects");
+            } else {
+                System.out.println(i+" hashed file does not seem to be in objects foldeer. check again");
+            }
+            //checks to see if everything is written in index
+            String correctIndex = hash + " " + testFile.getName();
+            Path pathToIndex = Paths.get("./"+ repoName + "/git/index");
+            try{
+                BufferedReader reader = Files.newBufferedReader(pathToIndex);
+                String line;
+                while((line = reader.readLine()) != null){
+                    if(correctIndex.equals(line)){
+                        System.out.println(i+ " this file is correctly stored in index");
+                    }
+                }
+                reader.close();
+            } catch(IOException e){
+                System.out.println("smth went wrong");
+            }
         }
 
-        //out here add the deletion of txt files as well as shi in objects folder and index
-
+        //out here the deletion of txt files as well as stuff in objects folder and index
+        File fileOfRepo = new File("./" + repoName + "/");
+        if(deleteAtEndOfTest){
+            repo.deleteEverything(fileOfRepo);
+            System.out.println("everything should be gone");
+        }
 
 
     }
@@ -34,7 +63,7 @@ public class GitTester {
     public static void createAndWriteFiles(int howMany) {
         try {
             for (int i = 0; i < howMany; i++) {
-                File testFile = new File("testFile" + i + ".txt");
+                File testFile = new File("./" + repoName + "/testFile" + i + ".txt");
                 testFile.createNewFile();
 
                 Path pathoftestfile = Paths.get(testFile.getPath());
