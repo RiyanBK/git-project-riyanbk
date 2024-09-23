@@ -13,7 +13,7 @@ import java.util.Random;
 //run the tester below tests everything
 public class GitTester {
     public static String repoName = "seanozalpasan";
-    public static int howMany = 5;
+    public static int howMany = 2;
     
     //if you want to delete everything, keep the delete variable true
     //if you want to keep all files, but make them empty, make the reset var true
