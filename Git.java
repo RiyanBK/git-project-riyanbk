@@ -12,7 +12,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class Git {
+    //toggle for compression
     public boolean compression = true;
+    //user sets this when Git is initialized in tester
     public String repoName;
 
     public Git(String repoName) {
@@ -46,6 +48,7 @@ public class Git {
         }
     }
 
+    //the below method checks if the repo is setup correctly before any file are added in
     public void checkAndDeleteRepo() {
         File gitDirFile = new File("./" + repoName + "/git/");
         File objectDirFile = new File("./" + repoName + "/git/objects/");
@@ -63,10 +66,8 @@ public class Git {
         if (repoDir.exists()) {
             System.out.println("the repo direc exists. path is ./" + repoName + "/");
         }
-        indexFile.delete();
-        objectDirFile.delete();
-        gitDirFile.delete();
-        repoDir.delete();
+        System.out.println("\n" + "initializing a repo works" + "\n");
+        deleteEverything(gitDirFile);
     }
 
     public void createBlob(String ogFilePath) {
@@ -91,9 +92,7 @@ public class Git {
         
         // read from og file and copy contents into new file in objects
         if(!hashedFile.exists()){
-            //System.out.println(ogFile.getPath());
             Path sourceFile = Paths.get(ogFile.getPath());
-            //System.out.println(hashedFile.getPath());
             Path targetFile = Paths.get(hashedFile.getPath());
             writeFromOGtoHashedFile(sourceFile, targetFile);
         }
@@ -116,13 +115,30 @@ public class Git {
                 BufferedWriter writer = Files.newBufferedWriter(pathToIndex, StandardOpenOption.APPEND);
                 writer.append(hash + " " + ogFileName + "\n");
                 writer.close();
-                System.out.println(ogFile.getName());
             }
         } catch (IOException e){
             System.out.println("couldnt print into index");
         }
     }
 
+    /*
+     * ok guys
+     * because a tempFile is created, when using compressed stuff its best to create
+     * a String with the name of the file before it got compressed. this way its easier
+     * to manage and keep track of stuff.
+     * if we didnt have that, then we would be overwriting the original file, which is bad
+     * 
+     * example from tester
+     *      File testFile = new File( "./"+repoName+"/testFile" + i + ".txt");
+            String testFileName = testFile.getName();
+            
+            if(repo.compression){
+                testFile = repo.compressed(testFile);
+            }
+            repo.createBlob("./"+ repoName + "/" +testFileName);
+        
+    as you can see we createBlob on the testFileName, not testFile.getName()
+    */
     public File compressed (File file){
         try{
             File compressedFile = File.createTempFile("compress", null);
