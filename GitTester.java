@@ -5,15 +5,19 @@ import java.io.BufferedReader;
 import java.nio.file.*;
 import java.util.Random;
 
-
 //remember that when testing the repository is always a level below where you run the tester
 //you might have to specify stuff like this repo.createBlob( "./"+ repoName + "/" +testFile.getName());
+
+
 
 //run the tester below tests everything
 public class GitTester {
     public static String repoName = "seanozalpasan";
     public static int howMany = 5;
-    public static boolean deleteAtEndOfTest = true;
+    
+    //if you want to delete everything, keep the delete variable true
+    //if you want to keep all files, but make them empty, make the reset var true
+    public static boolean deleteAtEndOfTest = false;
     public static boolean resetAllFiles = false;
     
     public static void main(String[] args) {
@@ -62,10 +66,9 @@ public class GitTester {
                 System.out.println("smth went wrong");
             }
         }
-
-        //out here the deletion of txt files as well as stuff in objects folder and index
-        
+    
         if(resetAllFiles){
+            //resets all txt files
             try {
                 for (int i = 0; i < howMany; i++) {
                     File testFile = new File("./" + repoName + "/testFile" + i + ".txt");
@@ -79,9 +82,11 @@ public class GitTester {
             } catch (Exception e){
                 System.out.println("didnt work");
             }
+            //resets index
             Path pathToIndex = Paths.get("./"+ repoName + "/git/index");
             clearFile(pathToIndex);
-            
+
+            //resets objects folder
             resetObjects();
         }
 
@@ -99,12 +104,14 @@ public class GitTester {
             }
     }
 
+    //opens a new bufferedwriter in write mode, overwriting everything present
     public static void clearFile(Path filePath) {
         try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
         } catch (IOException e) {
             System.err.println("Error clearing the file: " + e.getMessage());
         }
     }
+
     //this method creates a certain amount of txt files, based on the howMany parameter
     //the method will then write random numbers in the files
     public static void createAndWriteFiles(int howMany) {
