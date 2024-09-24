@@ -9,9 +9,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.io.FileOutputStream;
 
+//git reset --hard HEAD
+
 public class Git {
     //toggle for compression
-    public boolean compression = true;
+    public boolean compression = false;
     //user sets this when Git is initialized in tester
     public String repoName;
 
