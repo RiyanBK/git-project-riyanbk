@@ -5,14 +5,9 @@ import java.math.BigInteger;
 import java.nio.file.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 public class Git {
     //toggle for compression
@@ -74,7 +69,6 @@ public class Git {
     }
 
     public void createBlob(File ogFile) {
-        //File ogFile = new File(ogFilePath);
         String ogFileName = ogFile.getName();
 
         if(!ogFile.exists()){
@@ -86,7 +80,6 @@ public class Git {
 
         if(compression){
             compressed(ogFile);
-            //System.out.println(ogFile.getName() + " this og file names name after compression");
         }
 
         //creates the file and hash
@@ -114,7 +107,7 @@ public class Git {
             while((line = reader.readLine()) != null){
                 if(line.equals(hash + " " + ogFileName)){
                     existsInIndex = true;
-                    //System.out.println("this file has already been indexed");
+                    System.out.println("this file has already been indexed");
                 }
             }
             reader.close();
@@ -125,60 +118,22 @@ public class Git {
                 writer.close();
             }
         } catch (IOException e){
-            System.out.println("couldnt print into index");
+            e.printStackTrace();
         }
     }
 
-    /*
-     * ok guys
-     * because a tempFile is created, when using compressed stuff its best to create
-     * a String with the name of the file before it got compressed. this way its easier
-     * to manage and keep track of stuff.
-     * if we didnt have that, then we would be overwriting the original file, which is bad
-     * 
-     * example from tester
-     *      File testFile = new File( "./"+repoName+"/testFile" + i + ".txt");
-            String testFileName = testFile.getName();
-            
-            if(repo.compression){
-                testFile = repo.compressed(testFile);
-            }
-            repo.createBlob("./"+ repoName + "/" +testFileName);
-        
-    as you can see we createBlob on the testFileName, not testFile.getName()
-    */
     public void compressed (File file){
-        // try{
-        //     File compressedFile = File.createTempFile("compress", null);
-        //     FileInputStream fis = new FileInputStream(file);
-        //     FileOutputStream fos = new FileOutputStream(compressedFile);
-        //     DeflaterOutputStream dos = new DeflaterOutputStream(fos);
-        //     int data = fis.read();
-        //     while(data != -1){
-        //         dos.write(data);
-        //         data = fis.read();
-        //     }
-        //     dos.finish();
-        //     fis.close();
-        //     fos.close();
-        //     dos.close();
-        //     return compressedFile;
-        // } catch (IOException e){
-        //     System.out.println("couldnt print");
-        // }
-        // return file;
-        
         try {
-            //File compressFile = File.createTempFile("compress", null);
             File compressFile = new File(repoName + "/git/objects/" + createHash(file));
-            //FileInputStream fis = new FileInputStream(file);
+            //above is the file with the name of the hash with all the contents from og file
             FileOutputStream fileOut = new FileOutputStream(compressFile);
             ZipOutputStream zipOut = new ZipOutputStream(fileOut);
-            zipOut.putNextEntry(new ZipEntry(compressFile.getPath())); 
+            zipOut.putNextEntry(new ZipEntry(compressFile.getName())); //if you want to unzip the directory structure change to .getPath()
+            //code above makes it so that we getting all the zip stuff ready to write into compress file
             Path pathToFile = Paths.get(file.getPath());
             byte[] allBytes = Files.readAllBytes(pathToFile);
-            //System.out.println(compressFile.getPath());
-            //System.out.println(compressFile.toString());
+            //creates a byte array of file, which we will use to write into zipOut
+
             zipOut.write(allBytes);
             zipOut.close();
             fileOut.close();
@@ -186,7 +141,6 @@ public class Git {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //return null;
     }
     
     /*
@@ -207,7 +161,6 @@ public class Git {
             throw new RuntimeException(e);
         }
     }
-
 
     public void deleteEverything(File file){
         for(File childFile : file.listFiles()){
