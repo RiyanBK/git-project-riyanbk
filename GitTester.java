@@ -11,11 +11,11 @@ import java.util.Random;
 //run the tester below tests everything
 public class GitTester {
     public static String repoName = "sean";
-    public static int howMany = 10;
+    public static int howMany = 1;
     
     //if you want to delete everything, keep the delete variable true
     //if you want to keep all files, but make them empty, make the reset var true
-    public static boolean deleteAtEndOfTest = true;
+    public static boolean deleteAtEndOfTest = false;
     public static boolean resetAllFiles = false;
     
     public static void main(String[] args) {
@@ -28,18 +28,18 @@ public class GitTester {
         repo.initializeRepo();    
         createAndWriteFiles(howMany);
 
-
         for(int i = 0; i<howMany ; i++){
             File testFile = new File( "./"+repoName+"/testFile" + i + ".txt");
             String testFileName = testFile.getName();
 
+            System.out.println(testFile.getPath());
             //repo.createBlob("./"+ repoName + "/" + testFileName);
             repo.createBlob(testFile.getPath());
             //checks to see if all files are in objects folder
             String hash = repo.createHash(testFile);
             Path pathToHashedFile = Paths.get("./"+ repoName + "/git/objects/" + hash);
             if(Files.exists(pathToHashedFile)){
-                System.out.println("file" +i+"'s hash has been created successfully and the file is in objects");
+                //System.out.println("file" +i+"'s hash has been created successfully and the file is in objects");
             } else {
                 System.out.println("file" +i+"'s hashed file is NOT in objects");
             }
@@ -51,7 +51,7 @@ public class GitTester {
                 String line;
                 while((line = reader.readLine()) != null){
                     if(correctIndex.equals(line)){
-                        System.out.println("file" +i+" is correctly written in index");
+                        //System.out.println("file" +i+" is correctly written in index");
                     }
                 }
                 reader.close();
@@ -78,7 +78,6 @@ public class GitTester {
             //resets index
             Path pathToIndex = Paths.get("./"+ repoName + "/git/index");
             clearFile(pathToIndex);
-
             //resets objects folder
             resetObjects();
         }

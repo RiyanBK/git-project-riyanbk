@@ -16,7 +16,7 @@ import java.io.OutputStream;
 
 public class Git {
     //toggle for compression
-    public boolean compression = false;
+    public boolean compression = true;
     //user sets this when Git is initialized in tester
     public String repoName;
 
@@ -87,7 +87,7 @@ public class Git {
 
         if(compression){
             compressed(ogFile);
-            System.out.println(ogFile.getName() + " this og file names name after compression");
+            //System.out.println(ogFile.getName() + " this og file names name after compression");
         }
 
         //creates the file and hash
@@ -119,7 +119,7 @@ public class Git {
             while((line = reader.readLine()) != null){
                 if(line.equals(hash + " " + ogFileName)){
                     existsInIndex = true;
-                    System.out.println("this file has already been indexed");
+                    //System.out.println("this file has already been indexed");
                 }
             }
             reader.close();
@@ -183,7 +183,7 @@ public class Git {
             Path pathToFile = Paths.get(file.getPath());
             byte[] allBytes = Files.readAllBytes(pathToFile);
             //System.out.println(compressFile.getPath());
-            System.out.println(compressFile.toString());
+            //System.out.println(compressFile.toString());
             zipOut.write(allBytes);
             zipOut.close();
             fileOut.close();
