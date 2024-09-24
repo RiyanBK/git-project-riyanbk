@@ -15,7 +15,7 @@ public class GitTester {
     
     //if you want to delete everything, keep the delete variable true
     //if you want to keep all files, but make them empty, make the reset var true
-    public static boolean deleteAtEndOfTest = false;
+    public static boolean deleteAtEndOfTest = true;
     public static boolean resetAllFiles = false;
     
     public static void main(String[] args) {
@@ -34,7 +34,7 @@ public class GitTester {
 
             System.out.println(testFile.getPath());
             //repo.createBlob("./"+ repoName + "/" + testFileName);
-            repo.createBlob(testFile.getPath());
+            repo.createBlob(testFile);
             //checks to see if all files are in objects folder
             String hash = repo.createHash(testFile);
             Path pathToHashedFile = Paths.get("./"+ repoName + "/git/objects/" + hash);

@@ -73,14 +73,13 @@ public class Git {
         deleteEverything(gitDirFile);
     }
 
-    public void createBlob(String ogFilePath) {
-        File ogFile = new File(ogFilePath);
+    public void createBlob(File ogFile) {
+        //File ogFile = new File(ogFilePath);
         String ogFileName = ogFile.getName();
 
         if(!ogFile.exists()){
             throw new NullPointerException();
         }
-
         if(!ogFile.isFile() || ogFile.isDirectory()){
             throw new IllegalArgumentException();
         }
@@ -93,10 +92,6 @@ public class Git {
         //creates the file and hash
         String hash = createHash(ogFile);
         File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
-        if(compression){
-            ogFile.renameTo(hashedFile);
-            //hashedFile.delete();
-        }
         
         
         // read from og file and copy contents into new file in objects
@@ -175,7 +170,7 @@ public class Git {
         
         try {
             //File compressFile = File.createTempFile("compress", null);
-            File compressFile = new File(repoName + "/git/objects/" + file.getName());
+            File compressFile = new File(repoName + "/git/objects/" + createHash(file));
             //FileInputStream fis = new FileInputStream(file);
             FileOutputStream fileOut = new FileOutputStream(compressFile);
             ZipOutputStream zipOut = new ZipOutputStream(fileOut);
