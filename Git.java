@@ -6,14 +6,17 @@ import java.nio.file.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.zip.DeflaterOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class Git {
     //toggle for compression
-    public boolean compression = true;
+    public boolean compression = false;
     //user sets this when Git is initialized in tester
     public String repoName;
 
@@ -83,18 +86,28 @@ public class Git {
         }
 
         if(compression){
-            ogFile = compressed(ogFile);
+            compressed(ogFile);
+            System.out.println(ogFile.getName() + " this og file names name after compression");
         }
 
         //creates the file and hash
         String hash = createHash(ogFile);
         File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
+        if(compression){
+            ogFile.renameTo(hashedFile);
+            //hashedFile.delete();
+        }
+        
         
         // read from og file and copy contents into new file in objects
         if(!hashedFile.exists()){
             Path sourceFile = Paths.get(ogFile.getPath());
             Path targetFile = Paths.get(hashedFile.getPath());
-            writeFromOGtoHashedFile(sourceFile, targetFile);
+            try{
+                Files.copy(sourceFile, targetFile);
+            } catch (IOException e){
+                e.printStackTrace();
+            }
         }
 
         // code below checks index and if file there doesnt write if there writes
@@ -139,52 +152,55 @@ public class Git {
         
     as you can see we createBlob on the testFileName, not testFile.getName()
     */
-    public File compressed (File file){
-        try{
-            File compressedFile = File.createTempFile("compress", null);
-            FileInputStream fis = new FileInputStream(file);
-            FileOutputStream fos = new FileOutputStream(compressedFile);
-            DeflaterOutputStream dos = new DeflaterOutputStream(fos);
-            int data = fis.read();
-            while(data != -1){
-                dos.write(data);
-                data = fis.read();
-            }
-            dos.finish();
-            fis.close();
-            fos.close();
-            dos.close();
-            return compressedFile;
-        } catch (IOException e){
-            System.out.println("couldnt print");
+    public void compressed (File file){
+        // try{
+        //     File compressedFile = File.createTempFile("compress", null);
+        //     FileInputStream fis = new FileInputStream(file);
+        //     FileOutputStream fos = new FileOutputStream(compressedFile);
+        //     DeflaterOutputStream dos = new DeflaterOutputStream(fos);
+        //     int data = fis.read();
+        //     while(data != -1){
+        //         dos.write(data);
+        //         data = fis.read();
+        //     }
+        //     dos.finish();
+        //     fis.close();
+        //     fos.close();
+        //     dos.close();
+        //     return compressedFile;
+        // } catch (IOException e){
+        //     System.out.println("couldnt print");
+        // }
+        // return file;
+        
+        try {
+            //File compressFile = File.createTempFile("compress", null);
+            File compressFile = new File(repoName + "/git/objects/" + file.getName());
+            //FileInputStream fis = new FileInputStream(file);
+            FileOutputStream fileOut = new FileOutputStream(compressFile);
+            ZipOutputStream zipOut = new ZipOutputStream(fileOut);
+            zipOut.putNextEntry(new ZipEntry(compressFile.getPath())); 
+            Path pathToFile = Paths.get(file.getPath());
+            byte[] allBytes = Files.readAllBytes(pathToFile);
+            //System.out.println(compressFile.getPath());
+            System.out.println(compressFile.toString());
+            zipOut.write(allBytes);
+            zipOut.close();
+            fileOut.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return file;
+        //return null;
     }
     
-
-    //reads the source file, and prints it to the target
-    private void writeFromOGtoHashedFile(Path source, Path target){
-        try{
-            InputStream reader = Files.newInputStream(source);
-            OutputStream writer = Files.newOutputStream(target);
-            int data;
-            while ((data = reader.read()) != -1) {
-                writer.write(data);
-            }
-            reader.close();
-            writer.close();
-        } catch (IOException e) {
-            System.err.println("couldnt print");
-        }
-    }
-
     /*
      * as per https://www.geeksforgeeks.org/sha-1-hash-in-java/
      * takes the contents of the files and makes a sha1 hash
      */
     public String createHash(File filePath) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            MessageDigest md = MessageDigest.getInstance("SHA1");
             byte[] messageDigest = md.digest(Files.readAllBytes(filePath.toPath()));
             BigInteger no = new BigInteger(1, messageDigest);
             String hashtext = no.toString(16);

@@ -8,26 +8,23 @@ import java.util.Random;
 //remember that when testing the repository is always a level below where you run the tester
 //you might have to specify stuff like this repo.createBlob( "./"+ repoName + "/" +testFile.getName());
 
-
-
 //run the tester below tests everything
 public class GitTester {
-    public static String repoName = "seanozalpasan";
-    public static int howMany = 2;
+    public static String repoName = "sean";
+    public static int howMany = 10;
     
     //if you want to delete everything, keep the delete variable true
     //if you want to keep all files, but make them empty, make the reset var true
-    public static boolean deleteAtEndOfTest = false;
+    public static boolean deleteAtEndOfTest = true;
     public static boolean resetAllFiles = false;
     
     public static void main(String[] args) {
         Git repo = new Git(repoName);
         
         //below are initial tests for stretch goal 1 
-        repo.initializeRepo();
-        repo.checkAndDeleteRepo();
+        // repo.initializeRepo();
+        // repo.checkAndDeleteRepo();
         ////
-        
         repo.initializeRepo();    
         createAndWriteFiles(howMany);
 
@@ -36,12 +33,8 @@ public class GitTester {
             File testFile = new File( "./"+repoName+"/testFile" + i + ".txt");
             String testFileName = testFile.getName();
 
-            //to test compression go to Git.java and change the compression boolean from true to false
-            if(repo.compression){
-                testFile = repo.compressed(testFile);
-            }
-
-            repo.createBlob("./"+ repoName + "/" +testFileName);
+            //repo.createBlob("./"+ repoName + "/" + testFileName);
+            repo.createBlob(testFile.getPath());
             //checks to see if all files are in objects folder
             String hash = repo.createHash(testFile);
             Path pathToHashedFile = Paths.get("./"+ repoName + "/git/objects/" + hash);
@@ -119,8 +112,6 @@ public class GitTester {
             for (int i = 0; i < howMany; i++) {
                 File testFile = new File("./" + repoName + "/testFile" + i + ".txt");
                 if(!testFile.exists()){
-                    testFile.createNewFile();
-
                     Path pathoftestfile = Paths.get(testFile.getPath());
                     BufferedWriter writer = Files.newBufferedWriter(pathoftestfile);
 
