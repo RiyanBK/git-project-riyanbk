@@ -72,7 +72,8 @@ public class Git {
     }
 
     public void createBlob(File ogFile) {
-        String ogFileName = ogFile.getName();
+        try {
+            String ogFileName = ogFile.getName();
         if(!ogFile.exists()){
             throw new NullPointerException();
         }
@@ -82,10 +83,11 @@ public class Git {
         boolean isDir = ogFile.isDirectory();
         String hash = "";
         if (isDir) {
+            File temp = File.createTempFile (ogFile + "/dirData", null);
             for (File file : ogFile.listFiles()){
-                createBlob (new File ("/" + ogFile + "/" + file));
+                createBlob (file);
             }
-            //hash = createHash (new File (repoName + "/git/objects/dirData"));
+            hash = createHash(temp);
         } else {
         //creates the file and hash
         hash = createHash(ogFile);}
@@ -94,17 +96,13 @@ public class Git {
         if(!hashedFile.exists()){
             Path sourceFile = Paths.get(ogFile.getPath());
             Path targetFile = Paths.get(hashedFile.getPath());
-            try{
-                Files.copy(sourceFile, targetFile);
-            } catch (IOException e){
-                e.printStackTrace();
-            }
+            Files.copy(sourceFile, targetFile);
         }
 
         // code below checks index and if file there doesnt write if there writes
         boolean existsInIndex = false;
         Path pathToIndex = Paths.get("./" + repoName + "/git/index");
-        try{
+        
             BufferedReader reader = Files.newBufferedReader(pathToIndex);
             String line;
             while((line = reader.readLine()) != null){
@@ -132,7 +130,8 @@ public class Git {
                 }
                 writer.close();
             }
-        } catch (IOException e){
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -179,9 +178,6 @@ public class Git {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
             byte[] messageDigest = md.digest(Files.readAllBytes(filePath.toPath()));
-            // if (filePath.isDirectory()) {
-            //     messageDigest = md.digest(Files.readAllBytes(new File (repoName + "/git/objects/dirData").toPath()));
-            // }
             BigInteger no = new BigInteger(1, messageDigest);
             String hashtext = no.toString(16);
             while (hashtext.length() < 40) {
@@ -189,7 +185,6 @@ public class Git {
             }
             return hashtext;
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

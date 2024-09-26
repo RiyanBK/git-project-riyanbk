@@ -61,20 +61,20 @@ public class GitTester {
             //     e.printStackTrace();
             // }
 
-            /* 
+             
             File testDir = new File ("./" + repoName + "/testDir");
             String testDirName = testDir.getName();
             repo.createBlob (testDir);
 
-            //checks to see if it's in objects folder
+            /*//checks to see if it's in objects folder
             String dirHash = repo.createHash(testDir);
             Path pathToHashedDir = Paths.get("./" + repoName + "/git/objects" + dirHash);
             if(Files.exists(pathToHashedDir)){
                 System.out.println("dir's hash has been created successfully and the file is in objects");
             } else {
                 System.out.println("dir's hashed file is NOT in objects");
-            }*/
-            
+            }
+            */
         }
     
         if(resetAllFiles){
@@ -141,13 +141,13 @@ public class GitTester {
                 } else {
                     System.out.println("file"+ i + " alr exists");
                 }
-                // File testDir = new File ("./" + repoName + "/testDir");
-                // testDir.mkdir();
+                File testDir = new File ("./" + repoName + "/testDir");
+                testDir.mkdir();
 
-                // if (!testDir.exists()) {
-                //     Path pathOfTestDir = Paths.get(testDir.getPath());
+                if (!testDir.exists()) {
+                    Path pathOfTestDir = Paths.get(testDir.getPath());
                     
-                // }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
