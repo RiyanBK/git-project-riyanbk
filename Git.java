@@ -84,10 +84,17 @@ public class Git {
             String hash = "";
             if (isDir) {
                 File temp = File.createTempFile(ogFile + "/dirData", null);
+                BufferedWriter writer = new BufferedWriter(new FileWriter (temp));
                 for (File file : ogFile.listFiles()) {
                     //System.out.println (file); //for testing
                     createBlob(file);
+                    if (file.isDirectory()) {
+                        writer.write("tree " + hash + " " + ogFileName);
+                    } else {
+                        writer.write("blob " + hash + " " + ogFileName);
+                    }
                 }
+                writer.close();
                 hash = createHash(temp);
             } else {
                 // creates the file and hash
