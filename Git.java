@@ -8,6 +8,7 @@ import java.io.BufferedWriter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 
 //git reset --hard HEAD
 
@@ -72,23 +73,23 @@ public class Git {
 
     public void createBlob(File ogFile) {
         String ogFileName = ogFile.getName();
-
         if(!ogFile.exists()){
             throw new NullPointerException();
         }
-        if(!ogFile.isFile() || ogFile.isDirectory()){
-            throw new IllegalArgumentException();
-        }
-
         if(compression){
             compressed(ogFile);
         }
-
+        boolean isDir = ogFile.isDirectory();
+        String hash = "";
+        if (isDir) {
+            for (File file : ogFile.listFiles()){
+                createBlob (new File ("/" + ogFile + "/" + file));
+            }
+            //hash = createHash (new File (repoName + "/git/objects/dirData"));
+        } else {
         //creates the file and hash
-        String hash = createHash(ogFile);
+        hash = createHash(ogFile);}
         File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
-        
-        
         // read from og file and copy contents into new file in objects
         if(!hashedFile.exists()){
             Path sourceFile = Paths.get(ogFile.getPath());
@@ -107,22 +108,47 @@ public class Git {
             BufferedReader reader = Files.newBufferedReader(pathToIndex);
             String line;
             while((line = reader.readLine()) != null){
-                if(line.equals(hash + " " + ogFileName)){
+                if (isDir) {
+                    if(line.equals("tree " + hash + " " + ogFileName)){
                     existsInIndex = true;
                     System.out.println("this file has already been indexed");
                 }
+                } else {
+                    if(line.equals("blob " + hash + " " + ogFileName)){
+                        existsInIndex = true;
+                        System.out.println("this file has already been indexed");
+                    }
+                }
+                
             }
             reader.close();
 
             if(!existsInIndex){
                 BufferedWriter writer = Files.newBufferedWriter(pathToIndex, StandardOpenOption.APPEND);
-                writer.append(hash + " " + ogFileName + "\n");
+                if (isDir) {
+                    writer.append("tree " + hash + " " + ogFileName + "\n");
+                } else {
+                    writer.append("blob " + hash + " " + ogFileName + "\n");
+                }
                 writer.close();
             }
         } catch (IOException e){
             e.printStackTrace();
         }
     }
+
+    // public void createTreeData (File dir) throws IOException {
+    //     File temp = File.createTempFile("dirData", null);
+    //     BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
+    //     for (File subFile : dir.listFiles()) {
+    //         if (subFile.isDirectory()) {
+    //             writer.write ("tree " + createHash(subFile) + " " + subFile);
+    //         }
+    //         else {
+    //             writer.write ("blob " + createHash(subFile) + " " + subFile);
+    //         }
+    //     }
+    // }
 
     public void compressed (File file){
         try {
@@ -153,6 +179,9 @@ public class Git {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
             byte[] messageDigest = md.digest(Files.readAllBytes(filePath.toPath()));
+            // if (filePath.isDirectory()) {
+            //     messageDigest = md.digest(Files.readAllBytes(new File (repoName + "/git/objects/dirData").toPath()));
+            // }
             BigInteger no = new BigInteger(1, messageDigest);
             String hashtext = no.toString(16);
             while (hashtext.length() < 40) {
@@ -160,6 +189,7 @@ public class Git {
             }
             return hashtext;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

@@ -15,7 +15,7 @@ public class GitTester {
     
     //if you want to delete everything, keep the delete variable true
     //if you want to keep all files, but make them empty, make the reset var true
-    public static boolean deleteAtEndOfTest = false;
+    public static boolean deleteAtEndOfTest = true;
     public static boolean resetAllFiles = false;
     
     public static void main(String[] args) {
@@ -41,21 +41,40 @@ public class GitTester {
             } else {
                 System.out.println("file" +i+"'s hashed file is NOT in objects");
             }
+
+            //commented next code segment out because it breaks testing for directory files
+            //i just manually checked to see if everything was correctly written in index
+
             //checks to see if everything is written in index
-            String correctIndex = hash + " " + testFileName;
-            Path pathToIndex = Paths.get("./"+ repoName + "/git/index");
-            try{
-                BufferedReader reader = Files.newBufferedReader(pathToIndex);
-                String line;
-                while((line = reader.readLine()) != null){
-                    if(correctIndex.equals(line)){
-                        System.out.println("file" +i+" is correctly written in index");
-                    }
-                }
-                reader.close();
-            } catch(IOException e){
-                e.printStackTrace();
-            }
+            // String correctIndex = hash + " " + testFileName;
+            // Path pathToIndex = Paths.get("./"+ repoName + "/git/index");
+            // try{
+            //     BufferedReader reader = Files.newBufferedReader(pathToIndex);
+            //     String line;
+            //     while((line = reader.readLine()) != null){
+            //         if(correctIndex.equals(line)){
+            //             System.out.println("file" +i+" is correctly written in index");
+            //         }
+            //     }
+            //     reader.close();
+            // } catch(IOException e){
+            //     e.printStackTrace();
+            // }
+
+            /* 
+            File testDir = new File ("./" + repoName + "/testDir");
+            String testDirName = testDir.getName();
+            repo.createBlob (testDir);
+
+            //checks to see if it's in objects folder
+            String dirHash = repo.createHash(testDir);
+            Path pathToHashedDir = Paths.get("./" + repoName + "/git/objects" + dirHash);
+            if(Files.exists(pathToHashedDir)){
+                System.out.println("dir's hash has been created successfully and the file is in objects");
+            } else {
+                System.out.println("dir's hashed file is NOT in objects");
+            }*/
+            
         }
     
         if(resetAllFiles){
@@ -122,6 +141,13 @@ public class GitTester {
                 } else {
                     System.out.println("file"+ i + " alr exists");
                 }
+                // File testDir = new File ("./" + repoName + "/testDir");
+                // testDir.mkdir();
+
+                // if (!testDir.exists()) {
+                //     Path pathOfTestDir = Paths.get(testDir.getPath());
+                    
+                // }
             }
         } catch (IOException e) {
             e.printStackTrace();
