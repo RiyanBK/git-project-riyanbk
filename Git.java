@@ -1,5 +1,6 @@
 import java.security.*;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.*;
@@ -74,7 +75,7 @@ public class Git {
             //System.out.println ("og file name with toString():" + ogFile.toString()); //for testing
             //System.out.println ("og file name with getName(): " + ogFile.getName()); //for testing
             if (!ogFile.exists()) {
-                throw new NullPointerException();
+                throw new FileNotFoundException();
             }
             if (compression) {
                 compressed(ogFile);
@@ -84,7 +85,7 @@ public class Git {
             if (isDir) {
                 File temp = File.createTempFile(ogFile + "/dirData", null);
                 for (File file : ogFile.listFiles()) {
-                    System.out.println (file);
+                    //System.out.println (file); //for testing
                     createBlob(file);
                 }
                 hash = createHash(temp);
