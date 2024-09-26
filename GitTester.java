@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
@@ -11,7 +12,7 @@ import java.util.Random;
 //run the tester below tests everything
 public class GitTester {
     public static String repoName = "sean";
-    public static int howMany = 10;
+    public static int howMany = 2;
     
     //if you want to delete everything, keep the delete variable true
     //if you want to keep all files, but make them empty, make the reset var true
@@ -63,8 +64,10 @@ public class GitTester {
 
              
             File testDir = new File ("./" + repoName + "/testDir");
-            String testDirName = testDir.getName();
             repo.createBlob (testDir);
+
+            File fileInTestDir = new File ("./" + repoName + "/testDir/testFile.txt");
+            repo.createBlob(fileInTestDir);
 
             /*//checks to see if it's in objects folder
             String dirHash = repo.createHash(testDir);
@@ -144,10 +147,17 @@ public class GitTester {
                 File testDir = new File ("./" + repoName + "/testDir");
                 testDir.mkdir();
 
-                if (!testDir.exists()) {
-                    Path pathOfTestDir = Paths.get(testDir.getPath());
-                    
+                File fileInTestDir = new File ("./" + repoName + "/testDir/testFile.txt");
+                fileInTestDir.createNewFile();
+                BufferedWriter writer = new BufferedWriter(new FileWriter(fileInTestDir));
+                Random rand = new Random();
+                int randomNumber = rand.nextInt(100) + 1;
+
+                for (int j = 0; j < randomNumber; j++) {
+                    writer.append(j + "");
                 }
+                writer.close();
+
             }
         } catch (IOException e) {
             e.printStackTrace();
