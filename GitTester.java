@@ -76,8 +76,8 @@ public class GitTester {
                 System.out.println("dir's hash has been created successfully and the file is in objects");
             } else {
                 System.out.println("dir's hashed file is NOT in objects");
-            }
-            */
+            }*/
+            
         }
     
         if(resetAllFiles){
