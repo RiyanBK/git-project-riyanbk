@@ -88,11 +88,7 @@ public class Git {
                 for (File file : ogFile.listFiles()) {
                     //System.out.println (file); //for testing
                     createBlob(file);
-                    if (file.isDirectory()) {
-                        writer.write("tree " + hash + " " + ogFileName);
-                    } else {
-                        writer.write("blob " + hash + " " + ogFileName);
-                    }
+                    writer.write(file + "\n");
                 }
                 writer.close();
                 hash = createHash(temp);
