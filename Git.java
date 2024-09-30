@@ -26,7 +26,7 @@ public class Git {
     public void initializeRepo() {
         File gitDirFile = new File("./" + repoName + "/git/");
         if (!gitDirFile.exists()) {
-            gitDirFile.mkdirs();
+            gitDirFile.mkdir();
 
             File objectDirFile = new File("./" + repoName + "/git/objects/");
             if (!objectDirFile.exists()) {
@@ -81,28 +81,8 @@ public class Git {
                 compressed(ogFile);
             }
             boolean isDir = ogFile.isDirectory();
-            String hash = "";
-            if (isDir) {
-                File temp = File.createTempFile(ogFile + "/dirData", null);
-                BufferedWriter writer = new BufferedWriter(new FileWriter (temp));
-                for (File file : ogFile.listFiles()) {
-                    //System.out.println (file); //for testing
-                    createBlob(file);
-                    writer.write(file + "\n");
-                }
-                writer.close();
-                hash = createHash(temp);
-            } else {
-                // creates the file and hash
-                hash = createHash(ogFile);
-            }
-            File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
-            // read from og file and copy contents into new file in objects
-            if (!hashedFile.exists()) {
-                Path sourceFile = Paths.get(ogFile.getPath());
-                Path targetFile = Paths.get(hashedFile.getPath());
-                Files.copy(sourceFile, targetFile);
-            }
+            String hash = hash(ogFile);
+            
 
             // code below checks index and if file there, doesnt write; if there, writes
             boolean existsInIndex = false;
@@ -138,6 +118,36 @@ public class Git {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public String hash (File fileName) {
+        String hash = "";
+        try {
+        if (fileName.isDirectory()) {
+            File temp = File.createTempFile(fileName + "/dirData", null);
+            BufferedWriter writer = new BufferedWriter(new FileWriter (temp));
+            if (fileName.listFiles() != null) {
+            for (File file : fileName.listFiles()) {
+                //System.out.println (file); //for testing
+                createBlob(file);
+                writer.write(file + "\n");
+            }
+            writer.close();}
+            hash = createHash(temp);
+        } else {
+            // creates the file and hash
+            hash = createHash(fileName);
+        }
+        File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
+        // read from og file and copy contents into new file in objects
+        if (!hashedFile.exists()) {
+            Path sourceFile = Paths.get(fileName.getPath());
+            Path targetFile = Paths.get(hashedFile.getPath());
+            Files.copy(sourceFile, targetFile);
+        }} catch (Exception e) {
+            e.printStackTrace();
+        }
+        return hash;
     }
 
     // public void createTreeData (File dir) throws IOException {
