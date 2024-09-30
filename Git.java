@@ -27,23 +27,45 @@ public class Git {
         File gitDirFile = new File("./" + repoName + "/git/");
         if (!gitDirFile.exists()) {
             gitDirFile.mkdir();
+        }
+        // File objectDirFile = new File("./" + repoName + "/git/objects/");
+        File indexFile = new File("./" + repoName + "/git/index");
+        File objectDirFile = new File("./" + repoName + "/git/objects/");
+        if (gitDirFile.exists() && objectDirFile.exists() && indexFile.exists()) {
+            System.out.println("Git Repository already exists");
+        } else {
 
-            File objectDirFile = new File("./" + repoName + "/git/objects/");
+            if (!gitDirFile.exists()) {
+                gitDirFile.mkdir();
+            }
             if (!objectDirFile.exists()) {
                 objectDirFile.mkdir();
             }
-
-            File indexFile = new File("./" + repoName + "/git/index");
             if (!indexFile.exists()) {
                 try {
                     indexFile.createNewFile();
                 } catch (IOException e) {
-                    System.out.println("could not create file");
+                    e.printStackTrace();
                 }
             }
-        } else {
-            System.out.println("Git Repository already exists");
         }
+        // if (!gitDirFile.exists()) {
+        // gitDirFile.mkdirs();
+
+        // if (!objectDirFile.exists()) {
+        // objectDirFile.mkdirs();
+        // }
+
+        // if (!indexFile.exists()) {
+        // try {
+        // indexFile.createNewFile();
+        // } catch (IOException e) {
+        // System.out.println("could not create file");
+        // }
+        // }
+        // } else {
+        // System.out.println("Git Repository already exists");
+        // }
     }
 
     // the below method checks if the repo is setup correctly before any file are
@@ -83,7 +105,26 @@ public class Git {
                 compressed(ogFile);
             }
             boolean isDir = ogFile.isDirectory();
-            String hash = hash(ogFile);
+            // String hash = "";
+            // if (isDir) {
+            // File temp = File.createTempFile(ogFile + "/dirData", null);
+            // BufferedWriter writer = new BufferedWriter(new FileWriter (temp));
+            // for (File file : ogFile.listFiles()) {
+            // //System.out.println (file); //for testing
+            // createBlob(file);
+            // if (!file.isDirectory())
+            // {
+            // writer.write("blob " + createHash(file) + " " + file);
+            // }
+            // writer.write(file + "\n");
+            // }
+            // writer.close();
+            // hash = createHash(temp);
+            // } else {
+            // // creates the file and hash
+            // hash = createHash(ogFile);
+            // }
+            String hash = getHash(ogFile);
 
             // code below checks index and if file there, doesnt write; if there, writes
             boolean existsInIndex = false;
@@ -121,35 +162,41 @@ public class Git {
         }
     }
 
-    public String hash(File fileName) {
+    public String getHash(File f) {
         String hash = "";
-        try {
-            if (fileName.isDirectory()) {
-                File temp = File.createTempFile(fileName + "/dirData", null);
+        if (!f.isDirectory()) {
+            hash = createHash(f);
+        } else { // if is directory
+            try {
+                File temp = File.createTempFile(f + "/dirData", null);
                 BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
-                if (fileName.listFiles() != null) {
-                    for (File file : fileName.listFiles()) {
-                        // System.out.println (file); //for testing
-                        createBlob(file);
-                        writer.write(file + "\n");
+                for (File file : f.listFiles()) {
+                    // System.out.println (file); //for testing
+                    createBlob(file);
+                    if (!file.isDirectory()) {
+                        writer.write("blob " + createHash(file) + " " + file + "\n");
+                    } else {
+                        writer.write("tree " + getHash(file) + " " + file + "\n");
                     }
-                    writer.close();
                 }
-                hash = createHash(temp);
-            } else {
-                // creates the file and hash
-                hash = createHash(fileName);
+                writer.close();
+                hash = getHash(temp);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
-            // read from og file and copy contents into new file in objects
-            if (!hashedFile.exists()) {
-                Path sourceFile = Paths.get(fileName.getPath());
-                Path targetFile = Paths.get(hashedFile.getPath());
-                Files.copy(sourceFile, targetFile);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
+        // read from og file and copy contents into new file in objects
+        if (!hashedFile.exists()) {
+            Path sourceFile = Paths.get(f.getPath());
+            Path targetFile = Paths.get(hashedFile.getPath());
+            try {
+                Files.copy(sourceFile, targetFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         return hash;
     }
 

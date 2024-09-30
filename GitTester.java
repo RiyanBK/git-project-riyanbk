@@ -18,7 +18,7 @@ public class GitTester {
 
     // if you want to delete everything, keep the delete variable true
     // if you want to keep all files, but make them empty, make the reset var true
-    public static boolean deleteAtEndOfTest = true;
+    public static boolean deleteAtEndOfTest = false;
     public static boolean resetAllFiles = false;
 
     public static void main(String[] args) {
@@ -28,83 +28,79 @@ public class GitTester {
         repo.initializeRepo();
         repo.checkAndDeleteRepo();
         ////
-        repo.initializeRepo();
-        createAndWriteFiles(howMany);
+        //repo.initializeRepo();
+        //createAndWriteFiles(howMany);
 
-        for (int i = 0; i < howMany; i++) {
-            File testFile = new File("./" + repoName + "/testFile" + i + ".txt");
-            String testFileName = testFile.getName();
-
-            repo.createBlob(testFile);
-            // checks to see if all files are in objects folder
-            String hash = repo.createHash(testFile);
-            Path pathToHashedFile = Paths.get("./" + repoName + "/git/objects/" + hash);
-            if (Files.exists(pathToHashedFile)) {
-                System.out.println("file" + i + "'s hash has been created successfully and the file is in objects");
-            } else {
-                System.out.println("file" + i + "'s hashed file is NOT in objects");
+        // manual index check
+        StringBuilder sb = new StringBuilder();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("./" + repoName + "/git/index"));
+            int count = 0;
+            while (reader.ready()) {
+                sb.append(reader.readLine());
+                sb.append("\n");
+                count++;
             }
-
-            // commented next code segment out because it breaks testing for directory files
-            // i just manually checked to see if everything was correctly written in index
-            // (below)
-
-            // checks to see if everything is written in index
-            // String correctIndex = hash + " " + testFileName;
-            // Path pathToIndex = Paths.get("./"+ repoName + "/git/index");
-            // try{
-            // BufferedReader reader = Files.newBufferedReader(pathToIndex);
-            // String line;
-            // while((line = reader.readLine()) != null){
-            // if(correctIndex.equals(line)){
-            // System.out.println("file" +i+" is correctly written in index");
-            // }
-            // }
-            // reader.close();
-            // } catch(IOException e){
-            // e.printStackTrace();
-            // }
-
-            File testDir = new File("./" + repoName + "/testDir");
-            repo.createBlob(testDir);
-
-            File fileInTestDir = new File("./" + repoName + "/testDir/testFile.txt");
-            repo.createBlob(fileInTestDir);
-
-            File testDir2 = new File("./" + repoName + "/testDir2");
-            repo.createBlob(testDir2);
-
-            File fileInTestDir2 = new File("./" + repoName + "/testDir2/testFileInTestDir2.txt");
-            repo.createBlob(fileInTestDir2);
-            File file2InTestDir2 = new File("./" + repoName + "/testDir2/testFile2InTestDir2.txt");
-            repo.createBlob(file2InTestDir2);
-
-            // manual index check
-            StringBuilder sb = new StringBuilder();
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader("./" + repoName + "/git/index"));
-                while (reader.ready()) {
-                    sb.append((char) reader.read());
-                }
-                reader.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            System.out.println(sb.toString());
-
-            /*
-             * //checks to see if it's in objects folder
-             * String dirHash = repo.createHash(testDir);
-             * Path pathToHashedDir = Paths.get("./" + repoName + "/git/objects" + dirHash);
-             * if(Files.exists(pathToHashedDir)){
-             * System.out.
-             * println("dir's hash has been created successfully and the file is in objects"
-             * );
-             * } else {
-             * System.out.println("dir's hashed file is NOT in objects");
-             * }
-             */
+            reader.close();
+            System.out.println("index line count: " + count);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        System.out.println("actual line count: 8");
+        System.out.println(sb.toString());
+
+        File testDir = new File("./" + repoName + "/testDir");
+        testDir.mkdir();
+        repo.createBlob(testDir);
+
+        File fileInTestDir = new File("./" + repoName + "/testDir/testFile.txt");
+        try {
+            fileInTestDir.createNewFile();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(fileInTestDir));
+            Random rand = new Random();
+            int randomNumber = rand.nextInt(100) + 1;
+            for (int j = 0; j < randomNumber; j++) {
+                writer.append(j + "");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        repo.createBlob(fileInTestDir);
+
+        File folderInTestDir = new File("./" + repoName +
+                "/testDir/folderInTestDir");
+        folderInTestDir.mkdir();
+        repo.createBlob(folderInTestDir);
+
+        File testDir2 = new File("./" + repoName + "/testDir2");
+        testDir2.mkdir();
+        repo.createBlob(testDir2);
+
+        File fileInTestDir2 = new File("./" + repoName +
+                "/testDir2/testFileInTestDir2.txt");
+        try {
+            fileInTestDir2.createNewFile();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(fileInTestDir2));
+            Random rand = new Random();
+            int randomNumber = rand.nextInt(100) + 1;
+            for (int j = 0; j < randomNumber; j++) {
+                writer.append(j + "");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        repo.createBlob(fileInTestDir2);
+
+        File file2InTestDir2 = new File("./" + repoName +
+                "/testDir2/testFile2InTestDir2.txt");
+        try {
+            file2InTestDir2.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        repo.createBlob(file2InTestDir2);
 
         if (resetAllFiles) {
             // resets all txt files
@@ -133,6 +129,113 @@ public class GitTester {
             repo.deleteEverything(fileOfRepo);
             System.out.println("everything should be gone");
         }
+
+        for (int i = 0; i < howMany; i++) {
+            File testFile = new File("./" + repoName + "/testFile" + i + ".txt");
+            // String testFileName = testFile.getName(); //for testing
+
+            /*
+             * repo.createBlob(testFile);
+             * // checks to see if all files are in objects folder
+             * String hash = repo.createHash(testFile);
+             * Path pathToHashedFile = Paths.get("./" + repoName + "/git/objects/" + hash);
+             * if (Files.exists(pathToHashedFile)) {
+             * System.out.println("file" + i +
+             * "'s hash has been created successfully and the file is in objects");
+             * } else {
+             * System.out.println("file" + i + "'s hashed file is NOT in objects");
+             * }
+             */
+
+            // commented next code segment out because it breaks testing for directory files
+            // i just manually checked to see if everything was correctly written in index
+            // (below)
+
+            // checks to see if everything is written in index
+            // String correctIndex = hash + " " + testFileName;
+            // Path pathToIndex = Paths.get("./"+ repoName + "/git/index");
+            // try{
+            // BufferedReader reader = Files.newBufferedReader(pathToIndex);
+            // String line;
+            // while((line = reader.readLine()) != null){
+            // if(correctIndex.equals(line)){
+            // System.out.println("file" +i+" is correctly written in index");
+            // }
+            // }
+            // reader.close();
+            // } catch(IOException e){
+            // e.printStackTrace();
+            // }
+
+            /*
+             * File testDir = new File("./" + repoName + "/testDir");
+             * testDir.mkdir();
+             * repo.createBlob(testDir);
+             * 
+             * File fileInTestDir = new File("./" + repoName + "/testDir/testFile.txt");
+             * try {
+             * fileInTestDir.createNewFile();
+             * BufferedWriter writer = new BufferedWriter(new FileWriter(fileInTestDir));
+             * Random rand = new Random();
+             * int randomNumber = rand.nextInt(100) + 1;
+             * for (int j = 0; j < randomNumber; j++) {
+             * writer.append(j + "");
+             * }
+             * writer.close();
+             * } catch (IOException e) {
+             * e.printStackTrace();
+             * }
+             * repo.createBlob(fileInTestDir);
+             * 
+             * File folderInTestDir = new File ("./" + repoName +
+             * "/testDir/folderInTestDir");
+             * folderInTestDir.mkdir();
+             * repo.createBlob(folderInTestDir);
+             * 
+             * File testDir2 = new File("./" + repoName + "/testDir2");
+             * testDir2.mkdir();
+             * repo.createBlob(testDir2);
+             * 
+             * File fileInTestDir2 = new File("./" + repoName +
+             * "/testDir2/testFileInTestDir2.txt");
+             * try {
+             * fileInTestDir2.createNewFile();
+             * BufferedWriter writer = new BufferedWriter(new FileWriter(fileInTestDir2));
+             * Random rand = new Random();
+             * int randomNumber = rand.nextInt(100) + 1;
+             * for (int j = 0; j < randomNumber; j++) {
+             * writer.append(j + "");
+             * }
+             * writer.close();
+             * } catch (IOException e) {
+             * e.printStackTrace();
+             * }
+             * repo.createBlob(fileInTestDir2);
+             * 
+             * File file2InTestDir2 = new File("./" + repoName +
+             * "/testDir2/testFile2InTestDir2.txt");
+             * try {
+             * file2InTestDir2.createNewFile();
+             * } catch (IOException e) {
+             * e.printStackTrace();
+             * }
+             * repo.createBlob(file2InTestDir2);
+             */
+
+            /*
+             * //checks to see if it's in objects folder
+             * String dirHash = repo.createHash(testDir);
+             * Path pathToHashedDir = Paths.get("./" + repoName + "/git/objects" + dirHash);
+             * if(Files.exists(pathToHashedDir)){
+             * System.out.
+             * println("dir's hash has been created successfully and the file is in objects"
+             * );
+             * } else {
+             * System.out.println("dir's hashed file is NOT in objects");
+             * }
+             */
+        }
+
     }
 
     public static void resetObjects() {
