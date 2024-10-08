@@ -1,0 +1,4 @@
+blob 3304b4b9cd6e34ed7227e1e3bcfa67cac6b73cf6 .\testingFolder\item
+blob a05d478d6e09bf33436de8e7a36f179666ac7545 .\testingFolder\testingFolder2\item2
+tree 91a5beeaf7ebf5df7b42efde5c167987dd008995 .\testingFolder\testingFolder2
+tree e39d2cbfcb495c3c20aba38ae46b7ff81a160152 .\testingFolder

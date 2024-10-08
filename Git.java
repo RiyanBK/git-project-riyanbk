@@ -1,15 +1,9 @@
 import java.security.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.*;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 
 //git reset --hard HEAD
 
@@ -19,19 +13,24 @@ public class Git {
     // user sets this when Git is initialized in tester
     public String repoName;
 
+    // I removed the need for repo name, so come up with whatever you want
+    // if it doesn't work on your laptop, you can try "./*repo name*/git" or smth. I
+    // use windows - Kyara Zhou
     public Git(String repoName) {
         this.repoName = repoName;
     }
 
     public void initializeRepo() {
-        File gitDirFile = new File("./" + repoName + "/git/");
+        File gitDirFile = new File("./git/");
+
         if (!gitDirFile.exists()) {
             gitDirFile.mkdir();
         }
-        // File objectDirFile = new File("./" + repoName + "/git/objects/");
-        File indexFile = new File("./" + repoName + "/git/index");
-        File objectDirFile = new File("./" + repoName + "/git/objects/");
-        if (gitDirFile.exists() && objectDirFile.exists() && indexFile.exists()) {
+        File indexFile = new File("./git/index");
+        File objectDirFile = new File("./git/objects/");
+        File headFile = new File("./git/HEAD/");
+
+        if (gitDirFile.exists() && objectDirFile.exists() && indexFile.exists() && headFile.exists()) {
             System.out.println("Git Repository already exists");
         } else {
 
@@ -48,44 +47,34 @@ public class Git {
                     e.printStackTrace();
                 }
             }
+            if (!headFile.exists()) {
+                try {
+                    headFile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        // if (!gitDirFile.exists()) {
-        // gitDirFile.mkdirs();
-
-        // if (!objectDirFile.exists()) {
-        // objectDirFile.mkdirs();
-        // }
-
-        // if (!indexFile.exists()) {
-        // try {
-        // indexFile.createNewFile();
-        // } catch (IOException e) {
-        // System.out.println("could not create file");
-        // }
-        // }
-        // } else {
-        // System.out.println("Git Repository already exists");
-        // }
     }
 
     // the below method checks if the repo is setup correctly before any file are
     // added in
     public void checkAndDeleteRepo() {
-        File gitDirFile = new File("./" + repoName + "/git/");
-        File objectDirFile = new File("./" + repoName + "/git/objects/");
-        File indexFile = new File("./" + repoName + "/git/index");
-        File repoDir = new File("./" + repoName + "/");
+        File gitDirFile = new File("./git/");
+        File objectDirFile = new File("./git/objects/");
+        File indexFile = new File("./git/index");
+        File repoDir = new File("./");
         if (gitDirFile.exists()) {
-            System.out.println("the git directory exists. path is ./" + repoName + "/git/");
+            System.out.println("the git directory exists. path is ./git/");
         }
         if (objectDirFile.exists()) {
-            System.out.println("the objects directory exists. path is ./" + repoName + "/git/objects/");
+            System.out.println("the objects directory exists. path is ./git/objects/");
         }
         if (indexFile.exists()) {
-            System.out.println("the index file exists. path is ./" + repoName + "/git/index");
+            System.out.println("the index file exists. path is ./git/index");
         }
         if (repoDir.exists()) {
-            System.out.println("the repo direc exists. path is ./" + repoName + "/");
+            System.out.println("the repo direc exists. path is ./");
         }
         System.out.println("\n" + "initializing a repo works" + "\n");
         deleteEverything(gitDirFile);
@@ -94,10 +83,6 @@ public class Git {
     public void createBlob(File ogFile) {
         try {
             String ogFileName = ogFile.toString();
-            // System.out.println ("og file name with toString():" + ogFile.toString());
-            // //for testing
-            // System.out.println ("og file name with getName(): " + ogFile.getName());
-            // //for testing
             if (!ogFile.exists()) {
                 throw new FileNotFoundException();
             }
@@ -105,30 +90,12 @@ public class Git {
                 compressed(ogFile);
             }
             boolean isDir = ogFile.isDirectory();
-            // String hash = "";
-            // if (isDir) {
-            // File temp = File.createTempFile(ogFile + "/dirData", null);
-            // BufferedWriter writer = new BufferedWriter(new FileWriter (temp));
-            // for (File file : ogFile.listFiles()) {
-            // //System.out.println (file); //for testing
-            // createBlob(file);
-            // if (!file.isDirectory())
-            // {
-            // writer.write("blob " + createHash(file) + " " + file);
-            // }
-            // writer.write(file + "\n");
-            // }
-            // writer.close();
-            // hash = createHash(temp);
-            // } else {
-            // // creates the file and hash
-            // hash = createHash(ogFile);
-            // }
             String hash = getHash(ogFile);
 
             // code below checks index and if file there, doesnt write; if there, writes
             boolean existsInIndex = false;
-            Path pathToIndex = Paths.get("./" + repoName + "/git/index");
+            // Path pathToIndex = Paths.get("./" + repoName + "/git/index");
+            Path pathToIndex = Paths.get("./git/index");
 
             BufferedReader reader = Files.newBufferedReader(pathToIndex);
             String line;
@@ -152,6 +119,7 @@ public class Git {
                 BufferedWriter writer = Files.newBufferedWriter(pathToIndex, StandardOpenOption.APPEND);
                 if (isDir) {
                     writer.append("tree " + hash + " " + ogFileName + "\n");
+
                 } else {
                     writer.append("blob " + hash + " " + ogFileName + "\n");
                 }
@@ -185,7 +153,8 @@ public class Git {
                 e.printStackTrace();
             }
         }
-        File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
+        // File hashedFile = new File("./" + repoName + "/git/objects/" + hash);
+        File hashedFile = new File("./git/objects/" + hash);
         // read from og file and copy contents into new file in objects
         if (!hashedFile.exists()) {
             Path sourceFile = Paths.get(f.getPath());
@@ -199,19 +168,6 @@ public class Git {
 
         return hash;
     }
-
-    // public void createTreeData (File dir) throws IOException {
-    // File temp = File.createTempFile("dirData", null);
-    // BufferedWriter writer = new BufferedWriter(new FileWriter(temp));
-    // for (File subFile : dir.listFiles()) {
-    // if (subFile.isDirectory()) {
-    // writer.write ("tree " + createHash(subFile) + " " + subFile);
-    // }
-    // else {
-    // writer.write ("blob " + createHash(subFile) + " " + subFile);
-    // }
-    // }
-    // }
 
     public void compressed(File file) {
         try {
@@ -266,5 +222,96 @@ public class Git {
             }
             file.delete();
         }
+    }
+
+    public void commit(String user, String content) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        String treeHash = storeToTree();
+        sb.append("tree: " + treeHash + "\n");
+        File headFile = new File("./git/HEAD");
+        BufferedReader bf = new BufferedReader(new FileReader(headFile));
+        if (bf.ready()) {
+            sb.append("parent: " + bf.readLine() + "\n");
+        } else {
+            // first commit
+        }
+
+        // don't forget to wipe the index file clean
+
+        // updates head file; should be the last step of the code
+        PrintWriter pw = new PrintWriter(headFile);
+        pw.print("");// appends the hash of the commit
+        pw.close();
+
+        bf.close();
+    }
+
+    // simply adds indexFile into the tree file
+
+    // fix: a new tree file is created every time; contains previous tree contents;
+    // store in objects folder
+    public String storeToTree() throws IOException {
+        // stores everthing to tree file
+        StringBuilder sb = new StringBuilder();
+        /**
+         * steps for getting the prev file
+         * 1. read file to see if head exist
+         * if file does exist, then proceed. Else, skip loop
+         * 2. read the 2nd line of file to find the previous file
+         */
+
+        // checks if head exist; if not exist, then it means its the first commit
+
+        // establishes the base logic for commiting if has previous file, check to see if works
+        File headFile = new File("./git/HEAD");
+        BufferedReader bf = new BufferedReader(new FileReader(headFile));
+        if (bf.ready()) {
+            File prevCommit = new File("./git/objects" + bf.readLine()); // check this part
+            bf = new BufferedReader(new FileReader(prevCommit));
+            StringBuilder sbTemp = new StringBuilder();
+            for (int i = 0; i < 46; i++) {
+                if (i > 6) {
+                    sbTemp.append(bf.read());
+                } else {
+                    bf.read();
+                }
+            }
+            prevCommit = new File ("./git/objects" + sbTemp.toString());
+            BufferedReader br = new BufferedReader(new FileReader(prevCommit));
+            while (br.ready()) {
+                sb.append(br.readLine() + "\n");
+            }
+
+
+        }
+
+        // find the hash of the previous tree
+        // BufferedReader br = new BufferedReader ();
+        // while (br.ready()) {
+        // sb.append(br.readLine() + "\n");
+        // }
+
+        BufferedReader br = new BufferedReader(new FileReader("./git/index"));
+        while (br.ready()) {
+            sb.append(br.readLine() + "\n");
+        }
+
+        // creates a temp file so we can make a blob for it
+        File tempFile = new File("./tempFile");
+        PrintWriter pw = new PrintWriter(tempFile);
+        pw.print(sb.toString());
+        pw.close();
+
+        // creates the treeFile here
+        String treeHash = getHash(tempFile);
+        File tree = new File(".git/objects/" + treeHash);
+        pw = new PrintWriter(tree);
+        pw.print(sb.toString());
+        pw.close();
+        br.close();
+        tempFile.delete();
+
+        // stores to tree here
+        return treeHash;
     }
 }
