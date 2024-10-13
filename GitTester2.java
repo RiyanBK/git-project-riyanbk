@@ -1,21 +1,8 @@
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.BufferedWriter;
-import java.io.BufferedReader;
+import java.io.*;
 import java.nio.file.*;
-import java.util.Random;
 import java.security.NoSuchAlgorithmException;
 
-/*
- * Use this tester to test commit
- */
-
-public class tempTester {
+public class GitTester2 {
     public static String name = "git-project-riyanbk";
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
@@ -80,6 +67,7 @@ public class tempTester {
         BufferedWriter tf = new BufferedWriter(new FileWriter(indexFile));
         tf.write("why is this so confusing");
         File testingFolder2 = new File(testingFolder, "testingFolder2");
+        testingFolder2.mkdir();
         File test2 = new File(testingFolder2, "item2");
         BufferedWriter tf2 = new BufferedWriter(new FileWriter(test2));
         tf2.write("cry");
