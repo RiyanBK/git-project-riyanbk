@@ -224,73 +224,79 @@ public class Git {
         }
     }
 
+    // creates a commit
     public void commit(String user, String content) throws IOException {
         StringBuilder sb = new StringBuilder();
         String treeHash = storeToTree();
-        sb.append("tree: " + treeHash + "\n");
+        // if the file HEAD is not empty, take HEAD content. Else(1st commit) leave it
+        // blank
+        sb.append("tree: " + treeHash + "\nparent: ");
         File headFile = new File("./git/HEAD");
         BufferedReader bf = new BufferedReader(new FileReader(headFile));
         if (bf.ready()) {
-            sb.append("parent: " + bf.readLine() + "\n");
+            sb.append(bf.readLine() + "\n");
         } else {
-            // first commit
+            sb.append("\n");
         }
 
-        // don't forget to wipe the index file clean
+        // author, committer, and content are all given by user
+        sb.append("author: " + user + "\ncommitter: " + user + "\n" + content);
 
-        // updates head file; should be the last step of the code
-        PrintWriter pw = new PrintWriter(headFile);
-        pw.print("");// appends the hash of the commit
+        // creates a temp file to make a blob from it
+        File tempFile = new File("./tempFile");
+        PrintWriter pw = new PrintWriter(tempFile);
+        pw.print(sb.toString());
         pw.close();
 
+        // creates the commit file by using the same method above
+        String commitHash = getHash(tempFile);
+        File commitFile = new File(".git/objects/" + commitHash);
+        pw = new PrintWriter(commitFile);
+        pw.print(sb.toString());
+        pw.close();
+
+        // updates head file
+        pw = new PrintWriter(headFile);
+        pw.print(commitHash);// appends the hash of the commit
         bf.close();
+        pw.close();
+        tempFile.delete();
+
+        // wipes clean the index file
+        File indexFile = new File("./git/index");
+        pw = new PrintWriter(indexFile);
+        pw.print("");
+        pw.close();
     }
 
-    // simply adds indexFile into the tree file
-
-    // fix: a new tree file is created every time; contains previous tree contents;
-    // store in objects folder
+    // stores current index file to tree
     public String storeToTree() throws IOException {
-        // stores everthing to tree file
+        // use head file to find previous commit -> find previous tree file through
+        // "tree: [hash code]" -> read its content and add to stringBuilder
         StringBuilder sb = new StringBuilder();
-        /**
-         * steps for getting the prev file
-         * 1. read file to see if head exist
-         * if file does exist, then proceed. Else, skip loop
-         * 2. read the 2nd line of file to find the previous file
-         */
-
-        // checks if head exist; if not exist, then it means its the first commit
-
-        // establishes the base logic for commiting if has previous file, check to see if works
         File headFile = new File("./git/HEAD");
         BufferedReader bf = new BufferedReader(new FileReader(headFile));
         if (bf.ready()) {
-            File prevCommit = new File("./git/objects" + bf.readLine()); // check this part
+            File prevCommit = new File("./git/objects/" + bf.readLine()); // check this part
             bf = new BufferedReader(new FileReader(prevCommit));
             StringBuilder sbTemp = new StringBuilder();
             for (int i = 0; i < 46; i++) {
-                if (i > 6) {
-                    sbTemp.append(bf.read());
+                if (i >= 6) {
+                    sbTemp.append((char) bf.read());
                 } else {
                     bf.read();
                 }
             }
-            prevCommit = new File ("./git/objects" + sbTemp.toString());
+
+            prevCommit = new File("./git/objects/" + sbTemp.toString());
             BufferedReader br = new BufferedReader(new FileReader(prevCommit));
             while (br.ready()) {
                 sb.append(br.readLine() + "\n");
             }
-
-
+            br.close();
         }
 
-        // find the hash of the previous tree
-        // BufferedReader br = new BufferedReader ();
-        // while (br.ready()) {
-        // sb.append(br.readLine() + "\n");
-        // }
-
+        // reads in new content from index file
         BufferedReader br = new BufferedReader(new FileReader("./git/index"));
         while (br.ready()) {
             sb.append(br.readLine() + "\n");

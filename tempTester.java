@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.nio.file.*;
@@ -11,33 +12,65 @@ import java.util.Random;
 import java.security.NoSuchAlgorithmException;
 
 /*
- * potential bugs list - Kyara
- * file not found exception -> check if the method you called have "reponame"
- * if yes, remove it
- * 
- * notes for Kyara
- * Commit is a function
- * Head changes in the commit function
- * 
- * tree file is just 1 file, contains whatever in index file
- * 
+ * Use this tester to test commit
  */
-
 
 public class tempTester {
     public static String name = "git-project-riyanbk";
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException{
-        mkTesters();
-        Git test = new Git(name);
-        test.initializeRepo();
-        File testingFolder = new File("./testingFolder");
-        // File testFile = new File("./testFile");
-        // BufferedWriter tf = new BufferedWriter(new FileWriter(testFile));
-        // tf.write("sos");
-        // tf.close();
 
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
+        Git test = new Git("git-project-riyanbk");
+        test.initializeRepo();
+        // tests first commit
+        commitTest1(test);
+
+        // tests second commit
+        commitTest2(test);
+
+        // clear everything
+        deleteObjects();
+    }
+
+    private static void deleteObjects() throws FileNotFoundException {
+        File objectesFolder = new File("./git/objects");
+        for (File subFile : objectesFolder.listFiles()) {
+            subFile.delete();
+        }
+        File Head = new File("./git/HEAD");
+        PrintWriter pw = new PrintWriter(Head);
+        pw.print("");
+        pw.close();
+        File testingFolder = new File("./testingFolder");
+        testingFolderDelete(testingFolder);
+
+    }
+
+    private static void testingFolderDelete(File folder) throws FileNotFoundException {
+        for (File subDir : folder.listFiles()) {
+            if (subDir.isDirectory()) {
+                testingFolderDelete(subDir);
+            } else {
+                subDir.delete();
+            }
+        }
+        folder.delete();
+    }
+
+    private static void commitTest2(Git test) throws IOException, NoSuchAlgorithmException {
+        File moreTester = new File("./testFile2");
+        PrintWriter pw = new PrintWriter(moreTester);
+        pw.print("commit2");
+        pw.close();
+        test.createBlob(moreTester);
+        test.commit("Kyara", "test456, test456");
+        moreTester.delete();
+    }
+
+    private static void commitTest1(Git test) throws IOException, NoSuchAlgorithmException {
+        mkTesters();
+        File testingFolder = new File("./testingFolder");
         test.createBlob(testingFolder);
-        test.commit();
+        test.commit("sonarii", "test123, test123");
     }
 
     private static void mkTesters() throws IOException, NoSuchAlgorithmException {
