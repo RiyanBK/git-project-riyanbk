@@ -5,14 +5,18 @@ import java.security.NoSuchAlgorithmException;
 public class GitTester2 {
     public static String name = "git-project-riyanbk";
 
+    // use this one to test commit
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         Git test = new Git("git-project-riyanbk");
         test.initializeRepo();
+        // tests commit nothing
+        // test.commit("Kyara", "nothing is here");
+        
         // tests first commit
-        commitTest1(test);
+        // commitTest1(test);
 
         // tests second commit
-        commitTest2(test);
+        // commitTest2(test);
 
         // clear everything
         deleteObjects();
@@ -33,14 +37,16 @@ public class GitTester2 {
     }
 
     private static void testingFolderDelete(File folder) throws FileNotFoundException {
-        for (File subDir : folder.listFiles()) {
-            if (subDir.isDirectory()) {
-                testingFolderDelete(subDir);
-            } else {
-                subDir.delete();
+        if (folder.length() != 0) {
+            for (File subDir : folder.listFiles()) {
+                if (subDir.isDirectory()) {
+                    testingFolderDelete(subDir);
+                } else {
+                    subDir.delete();
+                }
             }
+            folder.delete();
         }
-        folder.delete();
     }
 
     private static void commitTest2(Git test) throws IOException, NoSuchAlgorithmException {
@@ -48,7 +54,7 @@ public class GitTester2 {
         PrintWriter pw = new PrintWriter(moreTester);
         pw.print("commit2");
         pw.close();
-        test.createBlob(moreTester);
+        test.stage(moreTester.getPath());
         test.commit("Kyara", "test456, test456");
         moreTester.delete();
     }
@@ -56,7 +62,7 @@ public class GitTester2 {
     private static void commitTest1(Git test) throws IOException, NoSuchAlgorithmException {
         mkTesters();
         File testingFolder = new File("./testingFolder");
-        test.createBlob(testingFolder);
+        test.stage(testingFolder.getPath());
         test.commit("sonarii", "test123, test123");
     }
 

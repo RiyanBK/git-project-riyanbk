@@ -2,12 +2,13 @@ import java.security.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 //git reset --hard HEAD
 
-public class Git {
+public class Git implements GitInterface {
     // toggle for compression
     public boolean compression = false;
     // user sets this when Git is initialized in tester
@@ -80,7 +81,7 @@ public class Git {
         deleteEverything(gitDirFile);
     }
 
-    public void createBlob(File ogFile) {
+    private void createBlob(File ogFile) {
         try {
             String ogFileName = ogFile.toString();
             if (!ogFile.exists()) {
@@ -169,6 +170,46 @@ public class Git {
         return hash;
     }
 
+    public void stage(String filePath) {
+        File f = new File(filePath);
+        createBlob(f);
+    }
+
+    public void checkout(String commitHash) {
+        ArrayList<String> files = new ArrayList();
+        files.add(commitHash);
+        File headFile = new File("./git/HEAD");
+        PrintWriter pw = new PrintWriter(headFile);
+        pw.print(commitHash);// appends the hash of the commit
+        pw.close();
+
+        BufferedReader bf = new BufferedReader(new FileReader(headFile));
+        if (bf.ready()) {
+            File prevCommit = new File("./git/objects/" + bf.readLine());
+            bf = new BufferedReader(new FileReader(prevCommit));
+            StringBuilder sbTemp = new StringBuilder();
+            for (int i = 0; i < 46; i++) {
+                if (i >= 6) {
+                    sbTemp.append((char) bf.read());
+                } else {
+                    bf.read();
+                }
+            }
+        }
+
+        File currentTree = new File("./git/objects/" + sbTemp.toString());
+        files.add(sbTemp.toString());
+        BufferedReader br = new BufferedReader(new FileReader(currentTree));
+        while (br.ready()) {
+            String temp = br.readLine();
+            files.add(temp.substring(0, 46));
+        }
+
+        // traverse commit history to store all previous hashes of tree and parent
+        br.close();
+
+    }
+
     public void compressed(File file) {
         try {
             File compressFile = new File(repoName + "/git/objects/" + createHash(file));
@@ -225,48 +266,55 @@ public class Git {
     }
 
     // creates a commit
-    public void commit(String user, String content) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        String treeHash = storeToTree();
-        // if the file HEAD is not empty, take HEAD content. Else(1st commit) leave it
-        // blank
-        sb.append("tree: " + treeHash + "\nparent: ");
-        File headFile = new File("./git/HEAD");
-        BufferedReader bf = new BufferedReader(new FileReader(headFile));
-        if (bf.ready()) {
-            sb.append(bf.readLine() + "\n");
-        } else {
-            sb.append("\n");
+    public String commit(String author, String message) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            String treeHash = storeToTree();
+            // if the file HEAD is not empty, take HEAD content. Else(1st commit) leave it
+            // blank
+            sb.append("tree: " + treeHash + "\nparent: ");
+            File headFile = new File("./git/HEAD");
+            BufferedReader bf = new BufferedReader(new FileReader(headFile));
+            if (bf.ready()) {
+                sb.append(bf.readLine() + "\n");
+            } else {
+                sb.append("\n");
+            }
+
+            // author, committer, and content are all given by user
+            sb.append("author: " + author + "\ncommitter: " + author + "\n" + message);
+
+            // creates a temp file to make a blob from it
+            File tempFile = new File("./tempFile");
+            PrintWriter pw = new PrintWriter(tempFile);
+            pw.print(sb.toString());
+            pw.close();
+
+            // creates the commit file by using the same method above
+            String commitHash = getHash(tempFile);
+            File commitFile = new File(".git/objects/" + commitHash);
+            pw = new PrintWriter(commitFile);
+            pw.print(sb.toString());
+            pw.close();
+
+            // updates head file
+            pw = new PrintWriter(headFile);
+            pw.print(commitHash);// appends the hash of the commit
+            bf.close();
+            pw.close();
+            tempFile.delete();
+
+            // wipes clean the index file
+            File indexFile = new File("./git/index");
+            pw = new PrintWriter(indexFile);
+            pw.print("");
+            pw.close();
+
+            return commitHash;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        // author, committer, and content are all given by user
-        sb.append("author: " + user + "\ncommitter: " + user + "\n" + content);
-
-        // creates a temp file to make a blob from it
-        File tempFile = new File("./tempFile");
-        PrintWriter pw = new PrintWriter(tempFile);
-        pw.print(sb.toString());
-        pw.close();
-
-        // creates the commit file by using the same method above
-        String commitHash = getHash(tempFile);
-        File commitFile = new File(".git/objects/" + commitHash);
-        pw = new PrintWriter(commitFile);
-        pw.print(sb.toString());
-        pw.close();
-
-        // updates head file
-        pw = new PrintWriter(headFile);
-        pw.print(commitHash);// appends the hash of the commit
-        bf.close();
-        pw.close();
-        tempFile.delete();
-
-        // wipes clean the index file
-        File indexFile = new File("./git/index");
-        pw = new PrintWriter(indexFile);
-        pw.print("");
-        pw.close();
+        return "error";
     }
 
     // stores current index file to tree
@@ -277,7 +325,7 @@ public class Git {
         File headFile = new File("./git/HEAD");
         BufferedReader bf = new BufferedReader(new FileReader(headFile));
         if (bf.ready()) {
-            File prevCommit = new File("./git/objects/" + bf.readLine()); // check this part
+            File prevCommit = new File("./git/objects/" + bf.readLine());
             bf = new BufferedReader(new FileReader(prevCommit));
             StringBuilder sbTemp = new StringBuilder();
             for (int i = 0; i < 46; i++) {
