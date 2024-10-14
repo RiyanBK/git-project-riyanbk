@@ -175,40 +175,68 @@ public class Git implements GitInterface {
         createBlob(f);
     }
 
-    public void checkout(String commitHash) {
-        ArrayList<String> files = new ArrayList();
-        files.add(commitHash);
-        File headFile = new File("./git/HEAD");
-        PrintWriter pw = new PrintWriter(headFile);
-        pw.print(commitHash);// appends the hash of the commit
-        pw.close();
 
-        BufferedReader bf = new BufferedReader(new FileReader(headFile));
-        if (bf.ready()) {
-            File prevCommit = new File("./git/objects/" + bf.readLine());
-            bf = new BufferedReader(new FileReader(prevCommit));
-            StringBuilder sbTemp = new StringBuilder();
-            for (int i = 0; i < 46; i++) {
-                if (i >= 6) {
-                    sbTemp.append((char) bf.read());
-                } else {
-                    bf.read();
-                }
-            }
-        }
+    // NOT WORKING IGNORE THIS
+    // public void checkout(String commitHash) {
+    //     // change head to commitHash
+    //     ArrayList<String> files = new ArrayList();
+    //     files.add(commitHash);
+    //     File headFile = new File("./git/HEAD");
+    //     PrintWriter pw = new PrintWriter(headFile);
+    //     pw.print(commitHash);// appends the hash of the commit
+    //     pw.close();
 
-        File currentTree = new File("./git/objects/" + sbTemp.toString());
-        files.add(sbTemp.toString());
-        BufferedReader br = new BufferedReader(new FileReader(currentTree));
-        while (br.ready()) {
-            String temp = br.readLine();
-            files.add(temp.substring(0, 46));
-        }
+    //     // grabs the tree hash of the commit hash for all current files
+    //     BufferedReader bf = new BufferedReader(new FileReader(headFile));
+    //     if (bf.ready()) {
+    //         File prevCommit = new File("./git/objects/" + bf.readLine());
+    //         bf = new BufferedReader(new FileReader(prevCommit));
+    //         StringBuilder sbTemp = new StringBuilder();
+    //         for (int i = 0; i < 46; i++) {
+    //             if (i >= 6) {
+    //                 sbTemp.append((char) bf.read());
+    //             } else {
+    //                 bf.read();
+    //             }
+    //         }
+    //     }
 
-        // traverse commit history to store all previous hashes of tree and parent
-        br.close();
+    //     // grabs the parent
+    //     File currentTree = new File("./git/objects/" + sbTemp.toString());
+    //     files.add(sbTemp.toString()); // stores the hash of the tree hash
+    //     BufferedReader br = new BufferedReader(new FileReader(currentTree));
+    //     if (br.ready()) {
+    //         String temp = br.readLine();
+    //         files.add(temp.substring(0, 46));
+    //     }
 
-    }
+    //     // traverse commit history to store all previous hashes of tree and parent
+
+    //     br.close();
+
+    // }
+
+    // // IGNORE THIS AS WELL, FEEL FREE TO DELETE
+    // private void checkoutHelper(String currHash, ArrayList <String> files) {
+    //     // grabs the parent hash
+    //     files.add(currHash);
+    //     File currentTree = new File("./git/objects/" + currHash);
+    //     BufferedReader br = new BufferedReader(new FileReader(currentTree));
+    //     if (br.ready()) {
+    //         files.add(temp.substring(0, 46));
+    //         String temp = br.readLine();
+    //         files.add(temp.substring(0, 46));
+    //     }
+
+
+    //     files.add(sbTemp.toString()); // stores the hash of the tree hash
+    //     //BufferedReader br = new BufferedReader(new FileReader(currentTree));
+    //     while (br.ready()) {
+    //         String temp = br.readLine();
+    //         files.add(temp.substring(0, 46));
+    //     }
+
+    // }
 
     public void compressed(File file) {
         try {

@@ -10,13 +10,13 @@ public class GitTester2 {
         Git test = new Git("git-project-riyanbk");
         test.initializeRepo();
         // tests commit nothing
-        // test.commit("Kyara", "nothing is here");
+        test.commit("Kyara", "nothing is here");
         
         // tests first commit
-        // commitTest1(test);
+        commitTest1(test);
 
         // tests second commit
-        // commitTest2(test);
+        commitTest2(test);
 
         // clear everything
         deleteObjects();
